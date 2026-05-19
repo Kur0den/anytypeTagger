@@ -9,6 +9,8 @@ import (
 
 func main() {
 	fmt.Println("test")
+	
+	
 	anytypeAuth()
 }
 
@@ -18,14 +20,17 @@ func anytypeAuth() {
 		anytype.WithBaseURL("http://localhost:31009"),
 	)
 	
-	var ctx context.Context
+	ctx := context.Background()
 	auth, _ := client.Auth().CreateChallenge(ctx, "AnytypeTagger")
 	
 	fmt.Print("code: ")
 	var code string
 	fmt.Scanln(&code)
 
-	token, _ := client.Auth().CreateApiKey(ctx, auth.ChallengeID, code)
+	token, err := client.Auth().CreateApiKey(ctx, auth.ChallengeID, code)
+	
+	fmt.Println(token)
+	fmt.Println(err)
 
 	client = anytype.NewClient(
 		anytype.WithBaseURL("http://localhost:31009"),
