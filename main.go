@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"context"
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
@@ -10,8 +11,19 @@ import (
 func main() {
 	fmt.Println("test")
 	
+	getConfigPath()
 	
-	anytypeAuth()
+	// anytypeAuth()
+
+}
+
+func getConfigPath() {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return err
+	} 
+	fmt.Println(dir)
+	return dir
 }
 
 
