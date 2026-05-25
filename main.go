@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"context"
+
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
 )
@@ -11,19 +12,34 @@ import (
 func main() {
 	fmt.Println("test")
 	
-	getConfigPath()
+	config, err := getConfigPath()
 	
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(config)
 	// anytypeAuth()
 
 }
 
-func getConfigPath() {
-	dir, err := os.UserConfigDir()
+func getConfigPath() (dir string, err error) {
+	dir, err = os.UserConfigDir()
 	if err != nil {
-		return err
-	} 
+		return 
+	}
 	fmt.Println(dir)
-	return dir
+	configPath := dir + "/AnytypeTagger"
+	info, err := os.Stat(configPath)
+	if err != nil {
+		fmt.Println("configディレクトリが存在しないため新規作成します")
+		err = os.Mkdir(configPath, 0755)
+		if err != nil {
+			return
+		}
+	}
+	fmt.Println(info)
+	return 
 }
 
 
