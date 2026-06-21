@@ -9,9 +9,8 @@ import (
 	_ "github.com/epheo/anytype-go/client"
 )
 
+
 func main() {
-	fmt.Println("test")
-	
 	// configを取得
 	config, err := getConfigPath()
 	
@@ -23,7 +22,6 @@ func main() {
 	// anytypeAuth()
 
 }
-
 func getConfigPath() (dir string, err error) {
 	// configPathを取得
 	dir, err = os.UserConfigDir()
@@ -43,9 +41,21 @@ func getConfigPath() (dir string, err error) {
 			// 作成失敗時はreturn
 			return
 		}
+		info, err = os.Stat(configPath)
+		if err != nil {
+			return
+		}
 	}
 	fmt.Println(info)
 	return 
+}
+
+func getConfig(path) (config, err) {
+	err := nil
+	config = {}
+
+	config.llm.endpoint = "http://192.168.0.20:8080/v1"
+	return
 }
 
 
