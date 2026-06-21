@@ -7,7 +7,20 @@ import (
 
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
+
+	"github.com/openai/openai-go/v3"
 )
+
+
+type Config struct {
+	LLM struct {
+		Host			string 	`json:"host"`
+		Port			string 	`json:"port"`
+		IsHttps		bool		`json:"isHttps"`
+		Endpoint	string 	`json:"endpoint"`
+		Key				string 	`json:"key"`
+	} `json:"llm"`
+}
 
 
 func main() {
@@ -20,8 +33,8 @@ func main() {
 	}
 	fmt.Println(config)
 	// anytypeAuth()
-
 }
+
 func getConfigPath() (dir string, err error) {
 	// configPathを取得
 	dir, err = os.UserConfigDir()
@@ -32,7 +45,7 @@ func getConfigPath() (dir string, err error) {
 	// 保存するディレクトリを定義
 	configPath := dir + "/AnytypeTagger"
 	// ディレクトリが存在するか確認
-	info, err := os.Stat(configPath)
+	_, err = os.Stat(configPath)
 	if err != nil {
 		// 存在しない場合は新規作成
 		fmt.Println("configディレクトリが存在しないため新規作成します")
@@ -41,21 +54,23 @@ func getConfigPath() (dir string, err error) {
 			// 作成失敗時はreturn
 			return
 		}
-		info, err = os.Stat(configPath)
+		_, err = os.Stat(configPath)
 		if err != nil {
 			return
 		}
 	}
-	fmt.Println(info)
-	return 
+	return configPath, err
 }
 
-func getConfig(path) (config, err) {
-	err := nil
-	config = {}
+func getConfig() (Config, error) {
+	config := Config {}
+	
+	config.LLM.Host = "192.168.0.20"
+	config.LLM.Port = "8080"
+	config.LLM.IsHttps = false
+	config.LLM.Endpoint = "http://192.168.0.20:8080/v1"
 
-	config.llm.endpoint = "http://192.168.0.20:8080/v1"
-	return
+	return config, nil
 }
 
 
