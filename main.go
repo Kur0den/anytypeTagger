@@ -5,8 +5,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"net/url"
+	"os"
+	"strings"
 
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
@@ -24,6 +25,11 @@ type Config struct {
 		Endpoint	string 	`json:"endpoint"`
 		Key				string 	`json:"key"`
 	} `json:"llm"`
+}
+
+type AnytypeObjIds struct {
+	SpaceId		string
+	ObjectId	string
 }
 
 
@@ -46,12 +52,12 @@ func main() {
 	//   log.Fatalf("にんしょうがうまくいかなかったよ: %v", err)
 	// }
 
-	url, err := getAnytypeObjUrl()
+	url, err := getAnytypeObjId()
 	if err != nil {
 		log.Fatalf("urlがしゅとくできませんでした: %v", err)
 	}
 	fmt.Println(url)
-
+	return
 
 	llmClient := openai.NewClient(
 		option.WithAPIKey(config.LLM.Key),
@@ -72,7 +78,6 @@ func main() {
 	}
 
 	resp, err := getLLMResponse(modelId, llmClient)
-
 
 	fmt.Println(resp.Choices[0].Message.Content)
 }
@@ -148,31 +153,42 @@ func anytypeAuth() (*anytype.Client, error){
 
 func readStdio(prompt string) (string, error){
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(prompt)
+	fmt.Print(prompt + ": ")
 	text, err := reader.ReadString('\n')
 	if err != nil {
 		return "", fmt.Errorf("stdinのよみとりができなかったよ")
 	}
+	text = strings.TrimSpace(text)
 	return text, nil
 }
 
 
-func getAnytypeObjUrl() (*url.URL, error) {
+func getAnytypeObjId() (*AnytypeObjIds, error) {
 	inputUrl, err := readStdio("タグ付けをしたいAnytypeのObjのディープリンクをいれてね")
 	if err != nil {
 		return nil, err
 	}
-	// anytype://object?objectId=bafyreigliqee2dnuryf27rur7rfzv3gmyovv3lecwjqpys5kcxxmnstjlm&spaceId=bafyreifk5juacx5cd4kyzoxtlcni2i3zr57ckt73yqzl7n3mc23siys5p4.387ny5qanp1wc
 	url, err := url.Parse(inputUrl)
 	if err != nil {
-		return nil, fmt.Errorf("urlのパースができなかったよ")
+		return nil, fmt.Errorf("urlのパースができなかったよ, %v", err)
 	}
 	if url.Scheme != "anytype" {
 		return nil, fmt.Errorf("anytypeのスキーマじゃないみたいだよ")
 	} else if url.Host != "object" {
 		return nil, fmt.Errorf("objectに対するディープリンクじゃないみたいだよ")
 	}
-	return url, nil
+
+
+	objIds := AnytypeObjIds {}
+
+	objIds.ObjectId = url.Query().Get("objectId")
+	objIds.SpaceId = url.Query().Get("spaceId")
+	
+	if objIds.ObjectId == "" || objIds.SpaceId == "" {
+		return nil, fmt.Errorf("objectIdかspaceIdがディープリンクに存在しないみたいだよ")
+	}
+
+	return &objIds, nil
 }
 
 func getLLMResponse(modelId string, llmClient openai.Client) (*openai.ChatCompletion, error){
