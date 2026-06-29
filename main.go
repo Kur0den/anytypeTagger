@@ -41,7 +41,7 @@ func main() {
 		log.Fatalf("configがしゅとくできませんでした: %v", err)
 	}
 
-	// client, err := anytypeAuth()
+	// anytypeClient, err := anytypeAuth()
 	// if err != nil {
 	//   log.Fatalf("にんしょうがうまくいかなかったよ: %v", err)
 	// }
@@ -53,12 +53,12 @@ func main() {
 	fmt.Println(url)
 
 
-	client := openai.NewClient(
+	llmClient := openai.NewClient(
 		option.WithAPIKey(config.LLM.Key),
 		option.WithBaseURL(config.LLM.Endpoint),
 	)
 
-	models, err := client.Models.List(context.Background())
+	models, err := llmClient.Models.List(context.Background())
 
 	if err != nil {
 		fmt.Println("modelsがしゅとくできませんでした")
@@ -71,7 +71,7 @@ func main() {
 		modelId = model.ID
 	}
 
-	resp, err := getLLMResponse(modelId)
+	resp, err := getLLMResponse(modelId, llmClient)
 
 
 	fmt.Println(resp.Choices[0].Message.Content)
@@ -175,8 +175,8 @@ func getAnytypeObjUrl() (*url.URL, error) {
 	return url, nil
 }
 
-func getLLMResponse(modelId) {
-	resp, err := client.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
+func getLLMResponse(modelId string, llmClient openai.Client) (*openai.ChatCompletion, error){
+	resp, err := llmClient.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		Model: modelId,
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.DeveloperMessage("あなたは可愛い幼女なAIアシスタントです"),
@@ -188,4 +188,5 @@ func getLLMResponse(modelId) {
 		fmt.Println("問い合わせに失敗したかも")
 		panic(err)
 	}
+	return resp, nil
 }
