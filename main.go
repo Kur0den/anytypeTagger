@@ -178,7 +178,6 @@ func getAnytypeObjId() (*AnytypeObjIds, error) {
 		return nil, fmt.Errorf("objectに対するディープリンクじゃないみたいだよ")
 	}
 
-
 	objIds := AnytypeObjIds {}
 
 	objIds.ObjectId = url.Query().Get("objectId")
