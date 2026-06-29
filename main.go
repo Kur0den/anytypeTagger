@@ -139,7 +139,7 @@ func anytypeAuth() (*anytype.Client, error){
 	token, err := client.Auth().CreateApiKey(ctx, auth.ChallengeID, code)
 	
 	if err != nil {
-		return nil, fmt.Errorf("にんしょうのちゃれんじにしっぱいしたかも: %w", err)
+		return nil, fmt.Errorf("にんしょうのチャレンジしっぱいしたかも: %w", err)
 	}
 
 	// 取得したAPIキーを元にclientを再定義
