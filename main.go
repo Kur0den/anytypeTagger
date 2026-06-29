@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"net/url"
 
 	"github.com/epheo/anytype-go"
 	_ "github.com/epheo/anytype-go/client"
@@ -112,7 +113,6 @@ func getConfig() (Config, error) {
 	config.LLM.Endpoint = "http://192.168.0.20:8081/v1"
 	config.LLM.Key = "DUMMY"
 	return config, nil
-
 }
 
 
@@ -143,23 +143,36 @@ func anytypeAuth() (*anytype.Client, error){
 		anytype.WithAppKey(token.ApiKey),
 	)
 
-	return client, nil
+	return &client, nil
 }
 
-func readStdio(prompt) (string, err){
+func readStdio(prompt string) (string, error){
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print(prompt)
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		return nil, fmt.Errorf("stdinのよみとりができなかったよ")
+		return "", fmt.Errorf("stdinのよみとりができなかったよ")
 	}
 	return text, nil
 }
 
 
-func getAnytypeObjUrl() (string, error) {
-	inputUrl, err = readStdio("タグ付けをしたいAnytypeのObjのディープリンクをいれてね")
-	
+func getAnytypeObjUrl() (*url.URL, error) {
+	inputUrl, err := readStdio("タグ付けをしたいAnytypeのObjのディープリンクをいれてね")
+	if err != nil {
+		return nil, err
+	}
+	// anytype://object?objectId=bafyreigliqee2dnuryf27rur7rfzv3gmyovv3lecwjqpys5kcxxmnstjlm&spaceId=bafyreifk5juacx5cd4kyzoxtlcni2i3zr57ckt73yqzl7n3mc23siys5p4.387ny5qanp1wc
+	url, err := url.Parse(inputUrl)
+	if err != nil {
+		return nil, fmt.Errorf("urlのパースができなかったよ")
+	}
+	if url.Scheme != "anytype" {
+		return nil, fmt.Errorf("anytypeのスキーマじゃないみたいだよ")
+	} else if url.Host != "object" {
+		return nil, fmt.Errorf("objectに対するディープリンクじゃないみたいだよ")
+	}
+	return url, nil
 }
 
 func getLLMResponse(modelId) {
