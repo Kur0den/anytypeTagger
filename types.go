@@ -8,6 +8,7 @@ type Config struct {
 	Anytype struct {
 		Endpoint	string	`json:"endpoint"`
 		Token			string	`json:"token"`
+		TagId			string	`json:"tagid"`
 	}	`json:"antrype"`
 }
 

@@ -102,6 +102,7 @@ func getConfig() (Config, error) {
 	config.LLM.Endpoint = "http://192.168.0.20:8081/v1"
 	config.LLM.Token = "DUMMY"
 	config.Anytype.Endpoint = "http://localhost:31009"
+	config.Anytype.TagId = ""
 	return config, nil
 }
 
