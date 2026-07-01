@@ -30,19 +30,25 @@ func main() {
 		log.Fatalf("configがしゅとくできませんでした: %v", err)
 	}
 
-	// anytypeClient, err := anytypeAuth()
-	// if err != nil {
-	//   log.Fatalf("にんしょうがうまくいかなかったよ: %v", err)
-	// }
+	anytypeClient, err := anytypeAuth()
+	if err != nil {
+	  log.Fatalf("にんしょうがうまくいかなかったよ: %v", err)
+	}
 
-	url, err := getAnytypeObjId()
+	objIds, err := getAnytypeObjId()
 	if err != nil {
 		log.Fatalf("urlがしゅとくできませんでした: %v", err)
 	}
-	fmt.Println(url)
+	
+	content, err := getAnytypeObjMd(context.Background(), *anytypeClient, objIds)
+	if err != nil {
+		log.Fatalf("たいしょうのおぶじぇくとがしゅとくできませんでした: %v", err)
+	}
+	fmt.Println(content)
+	return
 
 	llmClient := openai.NewClient(
-		option.WithAPIKey(config.LLM.Key),
+		option.WithAPIKey(config.LLM.Token),
 		option.WithBaseURL(config.LLM.Endpoint),
 	)
 
@@ -93,41 +99,47 @@ func getConfigPath() (dir string, err error) {
 
 func getConfig() (Config, error) {
 	config := Config {}
-	
-	config.LLM.Host = "192.168.0.20"
-	config.LLM.Port = "8080"
-	config.LLM.IsHttps = false
 	config.LLM.Endpoint = "http://192.168.0.20:8081/v1"
-	config.LLM.Key = "DUMMY"
+	config.LLM.Token = "DUMMY"
+	config.Anytype.Endpoint = "http://localhost:31009"
 	return config, nil
 }
 
 
-func anytypeAuth() (*anytype.Client, error){
-	// clientを定義
-	client := anytype.NewClient(
-		anytype.WithBaseURL("http://localhost:31009"),
-	)
+func anytypeAuth(config Config) (*anytype.Client, error){
 	
-	// Anytypeの認証を呼び出し
-	ctx := context.Background()
-	auth, _ := client.Auth().CreateChallenge(ctx, "AnytypeTagger")
-	
-	fmt.Print("code: ")
-	var code string
-	fmt.Scanln(&code)
+	var token string
 
-	// 入力されたコードで問い合わせ
-	token, err := client.Auth().CreateApiKey(ctx, auth.ChallengeID, code)
-	
-	if err != nil {
-		return nil, fmt.Errorf("にんしょうのチャレンジしっぱいしたかも: %w", err)
+	if config.Anytype.Token != "" {
+		// clientを定義
+		client := anytype.NewClient(
+			anytype.WithBaseURL(config.Anytype.Token),
+		)
+		
+		// Anytypeの認証を呼び出し
+		ctx := context.Background()
+		auth, _ := client.Auth().CreateChallenge(ctx, "AnytypeTagger")
+		
+		fmt.Print("code: ")
+		var code string
+		fmt.Scanln(&code)
+
+		// 入力されたコードで問い合わせ
+		receivedToken, err := client.Auth().CreateApiKey(ctx, auth.ChallengeID, code)
+		
+		if err != nil {
+			return nil, fmt.Errorf("にんしょうのチャレンジしっぱいしたかも: %w", err)
+		}
+
+		// 取得したAPIキーを元にclientを再定義
+		token = receivedToken.ApiKey
+	} else {
+		token = config.Anytype.Token
 	}
 
-	// 取得したAPIキーを元にclientを再定義
-	client = anytype.NewClient(
+	client := anytype.NewClient(
 		anytype.WithBaseURL("http://localhost:31009"),
-		anytype.WithAppKey(token.ApiKey),
+		anytype.WithAppKey(token),
 	)
 
 	return &client, nil
@@ -170,6 +182,14 @@ func getAnytypeObjId() (*AnytypeObjIds, error) {
 	}
 
 	return &objIds, nil
+}
+
+func getAnytypeObjMd(ctx context.Context, client anytype.Client, objIds *AnytypeObjIds) (string ,error){
+	targetobj, err := client.Space(objIds.SpaceId).Object(objIds.ObjectId).Get(ctx)
+	if err != nil {
+		return "", fmt.Errorf("objectの取得にしっぱいしたよ: %v", err)
+	}
+	return targetobj.Object.Markdown, nil
 }
 
 func getLLMResponse(modelId string, llmClient openai.Client) (*openai.ChatCompletion, error){

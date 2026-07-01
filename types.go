@@ -2,15 +2,21 @@ package main
 
 type Config struct {
 	LLM struct {
-		Host			string 	`json:"host"`
-		Port			string 	`json:"port"`
-		IsHttps		bool		`json:"isHttps"`
 		Endpoint	string 	`json:"endpoint"`
-		Key				string 	`json:"key"`
+		Token			string 	`json:"token"`
 	} `json:"llm"`
+	Anytype struct {
+		Endpoint	string	`json:"endpoint"`
+		Token			string	`json:"token"`
+	}	`json:"antrype"`
 }
 
 type AnytypeObjIds struct {
 	SpaceId		string
 	ObjectId	string
+}
+
+type SuggestionTags struct {
+	Tag			string
+	Reason	string
 }
