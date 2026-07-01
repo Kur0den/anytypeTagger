@@ -57,7 +57,6 @@ func main() {
 		log.Fatalf("urlがしゅとくできませんでした: %v", err)
 	}
 	fmt.Println(url)
-	return
 
 	llmClient := openai.NewClient(
 		option.WithAPIKey(config.LLM.Key),
