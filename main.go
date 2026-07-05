@@ -30,7 +30,9 @@ func main() {
 		log.Fatalf("configがしゅとくできませんでした: %v", err)
 	}
 
-	anytypeClient, err := anytypeAuth()
+	ctx := context.Background()
+
+	anytypeClient, err := anytypeAuth(ctx, config)
 	if err != nil {
 	  log.Fatalf("にんしょうがうまくいかなかったよ: %v", err)
 	}
@@ -107,7 +109,7 @@ func getConfig() (Config, error) {
 }
 
 
-func anytypeAuth(config Config) (*anytype.Client, error){
+func anytypeAuth(ctx context.Context, config Config) (*anytype.Client, error){
 	
 	var token string
 
@@ -118,7 +120,6 @@ func anytypeAuth(config Config) (*anytype.Client, error){
 		)
 		
 		// Anytypeの認証を呼び出し
-		ctx := context.Background()
 		auth, _ := client.Auth().CreateChallenge(ctx, "AnytypeTagger")
 		
 		fmt.Print("code: ")
