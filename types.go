@@ -1,5 +1,7 @@
 package main
 
+import "github.com/epheo/anytype-go"
+
 type Config struct {
 	LLM struct {
 		Endpoint	string 	`json:"endpoint"`
@@ -20,4 +22,12 @@ type AnytypeObjIds struct {
 type SuggestionTags struct {
 	Tag			string
 	Reason	string
+}
+
+type Application struct {
+	config	Config
+	Anytype struct {
+		client anytype.Client
+		objIds AnytypeObjIds
+	}
 }
